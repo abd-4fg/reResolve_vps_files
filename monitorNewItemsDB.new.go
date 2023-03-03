@@ -10,7 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"time"
-
+	"strings"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -127,14 +127,31 @@ func doJob(db *sql.DB, table string, oldCount int) (newCount int) {
 			fmt.Println(oldCount, newCount)
 			nucleiOutput := dumpDB(db, oldCount, newCount, "output", "nuclei")
 			fmt.Println(nucleiOutput)
-			//send mail
-			command := fmt.Sprintf("printf '%s' | notify", nucleiOutput)
-			cmd := exec.Command("bash", "-c", command)
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				fmt.Println(fmt.Sprint(err) + ": " + string(output))
-				//TODO : call function to send mail here
+			var notify_bot string
+			for _, result := range strings.Split(nucleiOutput, "\\n") {
+				fmt.Println("result",result)
+				if strings.HasPrefix(result, "critical:") {
+					notify_bot = "nuclei_critical"
+				} else if strings.HasPrefix(result, "high:") {
+					notify_bot = "nuclei_high"
+				} else if strings.HasPrefix(result, "medium:") {
+					notify_bot = "nuclei_medium"
+				} else {
+					notify_bot = "nuclei_low"
+				}
+				fmt.Println("nucleioutput",nucleiOutput)
+				fmt.Println(notify_bot)
+			        //send mail
+				command := fmt.Sprintf("printf '%s' | notify -id %s", result ,notify_bot)
+				fmt.Println("command",command)
+				cmd := exec.Command("bash", "-c", command)
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					fmt.Println(fmt.Sprint(err) + ": " + string(output))
+					//TODO : call function to send mail here
+				}
 			}
+
 		}
 	}
 	//fmt.Println(oldCount, newCount)
