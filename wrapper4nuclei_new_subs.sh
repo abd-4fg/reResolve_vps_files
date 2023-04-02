@@ -4,7 +4,7 @@ subdomains2send=$1
 
 filteredSubsPath="/tmp/filtered_new_subs_nuclei.$(date +%s)"
 
-printf $subdomains2send | grep -vf /home/ec2-user/.config/cronScripts/nucleiBlacklist.txt > $filteredSubsPath
+printf $subdomains2send | grep -ivf /home/ec2-user/.config/cronScripts/nucleiBlacklist.txt > $filteredSubsPath
 
 if [ -s "$filteredSubsPath" ]; then
     echo "not empty" 
