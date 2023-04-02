@@ -13,10 +13,10 @@ OutputPath="/tmp/output.$domain.subfinder.$timestamp"
 logFile="/tmp/subfinder.log"
 
 ### subfinder
-timeout 5m subfinder -d $domain -es sonarsearch,sitedossier -all -v -o $OutputPath || echo "subfinder run error, probably timeout $OutputPath - $(hostname) $startTime" | notify
+timeout 5m subfinder -max-time 3 -d $domain -es sonarsearch,sitedossier -all -v -o $OutputPath || echo "subfinder run error, probably timeout $OutputPath - $(hostname) $startTime" | notify -id error
 
 ## run puredns resolve here against output of subfinder; only resolved once with verified resolvers with 500 thread.
-timeout 3.9h puredns resolve $OutputPath -r ~/dictionary/google.resolvers -l 500 --skip-validation -w $OutputPath.resolved  --wildcard-batch 500000  --wildcard-tests 50 || echo "puredns run error, probably timeout $OutputPath - $(hostname) $startTime" | notify
+timeout 3.9h puredns resolve $OutputPath -r ~/dictionary/google.resolvers -l 500 --skip-validation -w $OutputPath.resolved  --wildcard-batch 500000  --wildcard-tests 50 || echo "puredns run error, probably timeout $OutputPath - $(hostname) $startTime" | notify -id error
 
 echo "puredns resolve - $domain - $(date) "  | tee -a $logFile
 
@@ -42,7 +42,7 @@ then
     
 else
     echo "$OutputPath.resolved; subdomain count $SubdomainsCount ; not pushed $(hostname)"
-    echo "$OutputPath.resolved; subdomain count $SubdomainsCount ; not pushed $(hostname) $startTime" | notify
+    echo "$OutputPath.resolved; subdomain count $SubdomainsCount ; not pushed $(hostname) $startTime" | notify -id error
 fi;
 
 }
