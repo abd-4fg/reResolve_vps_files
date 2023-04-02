@@ -112,8 +112,17 @@ func doJob(db *sql.DB, table string, oldCount int) (newCount int) {
 				fmt.Println("-------------------")
 				// sending directly to nuclei for now
 				if subdomains2send != "" {
-					message := fmt.Sprintf("{\"domains\":\"%s\"}", subdomains2send)
-					callRabbitMQSend(message, "nuclei")
+					// message := fmt.Sprintf("{\"domains\":\"%s\"}", subdomains2send)
+					// callRabbitMQSend(message, "nuclei")
+
+					WrapperScript := "/home/ec2-user/reResolve_vps_files/wrapper4nuclei_new_subs.sh"
+					cmd := exec.Command("bash", WrapperScript, subdomains2send)
+
+					output, err := cmd.CombinedOutput()
+					if err != nil {
+						fmt.Println(fmt.Sprint(err) + ": " + string(output))
+					}
+					fmt.Println(string(output))				
 				}
 			}
 			fmt.Println("-------------------")
